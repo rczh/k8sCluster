@@ -381,7 +381,7 @@ Dashboard部署成功，我们通过kubectl proxy的方式来访问Dashboard。
 Dashboard登录地址：
 http://192.168.1.100:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/overview?namespace=default
 
-![image](https://github.com/rczh/kubernetes.git/images-folder/dashboard_1.png)
+![image](https://github.com/rczh/kubernetes/tree/master/images-folder/dashboard_1.png)
 > 说明：因为跳过了登录页面，由于权限问题目前无法看到任何内容
 
 ###7.4 授权Dashboard账户
