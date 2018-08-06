@@ -1,15 +1,15 @@
-#Kubernetes 1.11.1集群环境搭建及问题解决
+# Kubernetes 1.11.1集群环境搭建及问题解决
 
-##1. 安装环境
+## 1. 安装环境
 kubernetes(k8s)集群由两个节点组成，master和node节点。使用VirtualBox作为两个节点的宿主机，具体配置如下：
-###master节点配置：
+### master节点配置：
 - 系统：centos7
 - cpu：2核
 - 内存：3G
 - 硬盘：20G
 - 主机名：master
 - IP： 192.168.1.100
-###node节点配置：
+### node节点配置：
 - 系统：centos7
 - cpu：2核
 - 内存：2G
@@ -21,7 +21,7 @@ kubernetes(k8s)集群由两个节点组成，master和node节点。使用Virtual
 > 1. master和node节点cpu应该使用双核cpu，单核cpu有可能出现集群启动失败的情况。
 > 2. 由于k8s使用主机名标识每个节点，必须为每台主机设置不同的主机名。
 
-##2. 关闭swap和firewalld
+## 2. 关闭swap和firewalld
 在master和node节点上关闭swap和firewalld(由于node节点命令相同，这里不再列出)。
 ```
 [root@master ~]# swapoff -a
@@ -29,7 +29,7 @@ kubernetes(k8s)集群由两个节点组成，master和node节点。使用Virtual
 ```
 
 
-##3. 安装Docker
+## 3. 安装Docker
 在master和node节点上分别安装docker，并且启动docker服务。k8s官方文档推荐安装docker ce 17.03或者docker ee 1.11, 1.12, 1.13(由于node节点命令相同，这里不再列出)。
 ```
 [root@master ~]# yum install -y docker
@@ -55,8 +55,8 @@ Server:
  Experimental:    false
 ```
 
-##4. 安装kubeadm, kubelet, kubectl
-###4.1 下载rpm安装包
+## 4. 安装kubeadm, kubelet, kubectl
+### 4.1 下载rpm安装包
 在master和node节点上分别安装kubeadm, kubelet, kubectl。k8s官网建议使用yum方式安装，通过yum可以自动解决包依赖问题。这里采用下载rpm包的方式进行安装，手动下载rpm包并且上传到master和node节点中。
 > 说明：
 > 1. 本文中引用的rpm包采用单独下载然后上传到master和node节点的方式。k8s镜像下载采用docker hub作为代理的方式。
@@ -76,7 +76,7 @@ Server:
 > 2. rpm包下载地址类似于https://yum.kubernetes.io/pool/40ff4cf56f1b01f7415f0a4708e190cff5fbf037319c38583c52ae0469c8fcf3-kubeadm-1.11.1-0.x86_64.rpm
 > 3. socat-1.7.3.2-2.el7.x86_64.rpm不能在配置文件中找到下载地址，需要google单独下载
 
-###4.2 安装rpm包
+### 4.2 安装rpm包
 ```
 [root@master ~]# ls -l *.rpm
 -rw-r--r--. 1 root root  4383318 8月   1 22:56 cri-tools-1.11.0-0.x86_64.rpm
@@ -93,12 +93,12 @@ Server:
 ```
 > 由于rpm包安装时有依赖关系，注意安装顺序。另外，kubelet-1.11.1-0.x86_64.rpm和kubernetes-cni-0.6.0-0.x86_64.rpm两个包之间相互依赖，所以这两个包需要一起安装。
 
-###4.3 启动kubelet服务：
+### 4.3 启动kubelet服务：
 ```
 [root@master ~]# systemctl enable kubelet && systemctl start kubelet
 ```
 
-###4.4 修改网络配置：
+### 4.4 修改网络配置：
 ```
 [root@master ~]# cat /etc/sysctl.d/k8s.conf 
 net.bridge.bridge-nf-call-ip6tables = 1
@@ -109,8 +109,8 @@ net.ipv4.ip_forward = 1
 
 **在node节点安装kubeadm, kubelet, kubectl的命令相同，这里不再列出**
 
-##5. 初始化master集群
-###5.1 初始化集群
+## 5. 初始化master集群
+### 5.1 初始化集群
 使用kubeadm命令在master节点上初始化集群，由于之后安装pod网络插件的要求，在集群初始化时需要添加--pod-network-cidr=10.244.0.0/16参数
 ```
 [root@master ~]# kubeadm init --pod-network-cidr=10.244.0.0/16
@@ -137,7 +137,7 @@ I0802 01:24:49.412364   26719 kernel_validator.go:96] Validating kernel config
 	[ERROR ImagePull]: failed to pull image [k8s.gcr.io/coredns:1.1.3]: exit status 1
 [preflight] If you know what you are doing, you can make a check non-fatal with `--ignore-preflight-errors=...`
 ```
-###5.2 拉取镜像
+### 5.2 拉取镜像
 由于无法访问google网络，集群初始化时无法拉取相应的镜像造成初始化失败。
 > 说明：
 > 1. 本文采用的拉取镜像方法是通过docker hub作为代理先拉取k8s镜像，然后从docker hub拉取镜像到本地，最后把镜像tag成k8s镜像的方式(具体方法可以google这里不再描述)。
@@ -162,7 +162,7 @@ k8s.gcr.io/coredns                                                          1.1.
 k8s.gcr.io/etcd-amd64                                                       3.2.18              b8df3b177be2        3 months ago        219 MB
 k8s.gcr.io/pause                                                            3.1                 da86e6ba6ca1        7 months ago        742 kB
 ```
-###5.3 重新初始化集群：
+### 5.3 重新初始化集群：
 ```
 [root@master ~]# kubeadm init --pod-network-cidr=10.244.0.0/16 --kubernetes-version=1.11.1
 [init] using Kubernetes version: v1.11.1
@@ -244,7 +244,7 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 NAME      STATUS    ROLES     AGE       VERSION
 master    Ready     master    23m       v1.11.1
 ```
-###5.4 配置kubelet工具
+### 5.4 配置kubelet工具
 复制/etc/kubernetes/admin.conf文件到~/.kube/config，使得kubelet工具有权限访问集群。
 ```
 [root@master ~]# mkdir .kube
@@ -252,7 +252,7 @@ master    Ready     master    23m       v1.11.1
 [root@master ~]# kubelet --version
 Kubernetes v1.11.1
 ```
-###5.5 部署pod网络插件
+### 5.5 部署pod网络插件
 这里使用Flannel插件。下载flannel部署文件并且上传到master节点
 插件部署文件下载地址：
 https://raw.githubusercontent.com/coreos/flannel/v0.10.0/Documentation/kube-flannel.yml
@@ -264,8 +264,8 @@ serviceaccount/flannel created
 configmap/kube-flannel-cfg created
 daemonset.extensions/kube-flannel-ds created
 ```
-##6. node节点加入集群
-###6.1 拉取镜像
+## 6. node节点加入集群
+### 6.1 拉取镜像
 在node节点加入集群之前同样需要将k8s镜像拉取到node节点，具体方法与master拉取镜像相同。
 ```
 [root@node ~]# docker images
@@ -278,7 +278,7 @@ k8s.gcr.io/coredns                                                          1.1.
 k8s.gcr.io/etcd-amd64                                                       3.2.18              b8df3b177be2        3 months ago        219 MB
 k8s.gcr.io/pause                                                            3.1                 da86e6ba6ca1        7 months ago        742 kB
 ```
-###6.2 node节点加入集群
+### 6.2 node节点加入集群
 使用前面5.3中kubeadm join命令将node节点加入集群。
 ```
 [root@node ~]# kubeadm join 192.168.1.100:6443 --token rlm8dn.tze9ax8xvji7nvgm --discovery-token-ca-cert-hash sha256:e35df442775dd7c98afcc4ddcf4a5d4c009eff8baea45abe054be931f6db0955
@@ -309,7 +309,7 @@ This node has joined the cluster:
 
 Run 'kubectl get nodes' on the master to see this node join the cluster.
 ```
-###6.3 验证node节点是否加入成功
+### 6.3 验证node节点是否加入成功
 在master节点上执行：
 ```
 [root@master ~]# kubectl get nodes
@@ -319,14 +319,14 @@ node      Ready     <none>    15m       v1.11.1
 ```
 > 注意：如果node节点加入失败，可以尝试kubeadm reset，然后重新kubeadm join一次
 
-##7. 安装Dashboard
-###7.1 下载镜像
+## 7. 安装Dashboard
+### 7.1 下载镜像
 由于部署dashboard时需要下载k8s.gcr.io/kubernetes-dashboard-amd64:v1.8.3镜像，通过docker hub代理的方式拉取镜像
 ```
 [root@master ~]# docker images | grep dashboard
 k8s.gcr.io/kubernetes-dashboard-amd64                                       v1.8.3              0c60bcf89900        5 months ago        102 MB
 ```
-###7.2 部署Dashboard
+### 7.2 部署Dashboard
 下载dashboard部署文件上传到master节点，部署Dashboard。
 部署文件下载地址：
 https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
@@ -369,7 +369,7 @@ service/kubernetes-dashboard configured
 [root@master ~]# kubectl get po --all-namespaces | grep dashboard
 kube-system   kubernetes-dashboard-6948bdb78-mzh9q   1/1       Running   0          11m
 ```
-###7.3 访问Dashboard
+### 7.3 访问Dashboard
 Dashboard部署成功，我们通过kubectl proxy的方式来访问Dashboard。
 > 注意：由于默认kubectl proxy命令只能在master本机访问Dashboard，如果想在其他机器上访问Dashboard需要添加代理参数：
 ```
@@ -384,7 +384,7 @@ http://192.168.1.100:8001/api/v1/namespaces/kube-system/services/https:kubernete
 ![image](https://github.com/rczh/kubernetes/tree/master/images-folder/dashboard_1.png)
 > 说明：因为跳过了登录页面，由于权限问题目前无法看到任何内容
 
-###7.4 授权Dashboard账户
+### 7.4 授权Dashboard账户
 授权dashboard service账户，首先创建dashboard-admin.yaml文件(文件内容如下)，然后部署dashboard-admin.yaml
 参考文档：https://github.com/kubernetes/dashboard/wiki/Access-control
 ```
@@ -409,7 +409,7 @@ clusterrolebinding.rbac.authorization.k8s.io/kubernetes-dashboard created
 现在跳过登录页面后已经可以正常访问dashboard页面了：
 ![image](https://github.com/rczh/kubernetes.git/images-folder/dashboard_2.png)
 
-###7.5 安装Heapster插件 
+### 7.5 安装Heapster插件 
 为了能在Dashboard中查看节点状态，需要安装Dashboard Heapster插件
 文档参考：https://github.com/kubernetes/heapster/blob/master/docs/influxdb.md
 
@@ -528,8 +528,8 @@ Heapster部署成功但是没有正常显示监控数据，查看Heapster pod日
 Heapster监控启动成功：
 ![image](https://github.com/rczh/kubernetes.git/images-folder/heapster2.png)
 
-##8. 部署hello-node测试程序
-###8.1 创建server.js测试程序
+## 8. 部署hello-node测试程序
+### 8.1 创建server.js测试程序
 创建一个server.js程序，这个程序启动8080端口输出Hello World，程序用nodejs运行
 > 说明： 这里的测试程序镜像生成是在另一台主机完成的。
 ```
@@ -548,7 +548,7 @@ robin@robin-machine:~/Tmp$ node server.js &
 robin@robin-machine:~$ curl http://localhost:8080
 Hello World!
 ```
-###8.2 生成镜像
+### 8.2 生成镜像
 使用docker build命令生成hello-node镜像，并且将镜像上传到阿里云：
 ```
 robin@robin-machine:~/Tmp$ cat Dockerfile 
@@ -562,7 +562,7 @@ robin@robin-machine:~/Tmp$ docker push registry.cn-beijing.aliyuncs.com/robinima
 ```
 > 注意： 镜像上传阿里云之前需要先docker login登录阿里云
 
-###8.3 部署hello-node应用
+### 8.3 部署hello-node应用
 登录master节点，创建hello-node部署文件
 ```
 [root@master ~]# cat ./hello-node.yaml 
@@ -605,14 +605,14 @@ service/hello-node-service created
 ![image](https://github.com/rczh/kubernetes.git/images-folder/hello-node1.png)
 > 说明：由于hello-node:v1这个镜像在阿里云上是一个私有镜像，k8s没有权限拉取私有镜像，所以这里部署失败
 
-###8.4 创建secret，拉取私有镜像
+### 8.4 创建secret，拉取私有镜像
 如果想拉取私有镜像需要创建secret， 这里需要根据自己的阿里云仓库设置服务器，用户名，密码
 ```
 [root@master ~]# kubectl create secret docker-registry aliyunsecret --docker-server=DOCKER_REGISTRY_SERVER --docker-username=DOCKER_USER --docker-password=DOCKER_PASSWORD
 secret/aliyunsecret created
 ```
 
-###8.5 更新部署文件，重新部署hello-node应用
+### 8.5 更新部署文件，重新部署hello-node应用
 更新hello-node.yaml部署文件，加入imagePullSecrets字段引用前面创建的aliyunsecret，然后重新部署应用。
 ```
 [root@master ~]# cat hello-node.yaml 
@@ -653,7 +653,7 @@ spec:
 deployment.apps/hello-node configured
 service/hello-node-service unchanged
 ```
-###8.6 验证hello-node服务
+### 8.6 验证hello-node服务
 到这里hello-node服务已经部署成功，由于hello-node服务使用nodePort类型，查看service配置文件的nodePort端口(该端口是k8s自动分配，用于通过node节点访问服务)
 ![image](https://github.com/rczh/kubernetes.git/images-folder/hello-node2.png)
 
@@ -663,7 +663,7 @@ service/hello-node-service unchanged
 Hello World!
 ```
 
-###8.7 配置ingress, ingress controller
+### 8.7 配置ingress, ingress controller
 1. 由于nodePort类型服务是通过在节点上开通端口来对外提供服务的，如果想通过域名+url的方式访问服务需要配置ingress
 > 注意：由于ingress gce安装后会出现健康检查不通过，造成ingress controller服务启动失败的问题。这里选用的是nginx ingress
 
@@ -704,7 +704,7 @@ deployment.extensions/nginx-ingress created
 service/nginx-ingress created
 ```
 
-###8.8 更新hello-node部署文件，配置ingress
+### 8.8 更新hello-node部署文件，配置ingress
 
 更新hello-node.yaml部署文件，增加ingress配置，并且重新部署
 ```
@@ -764,7 +764,7 @@ service/hello-node-service unchanged
 ingress.extensions/hello-node created
 ```
 
-###8.9 验证ingress访问结果
+### 8.9 验证ingress访问结果
 通过Dashboard查看nginx-ingress服务的nodePort端口为30069
 
 ![image](https://github.com/rczh/kubernetes.git/images-folder/hello-node3.png)
