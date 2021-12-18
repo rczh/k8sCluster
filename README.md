@@ -776,9 +776,3 @@ Hello World!
 ```
 > 注意： ingress的访问必须通过域名的方式，30069为nginx-ingress服务nodePort端口
 
-
-Robin，
-2018/08/06
-
-
-
