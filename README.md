@@ -381,7 +381,7 @@ Dashboard部署成功，我们通过kubectl proxy的方式来访问Dashboard。
 Dashboard登录地址：
 http://192.168.1.100:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/overview?namespace=default
 
-![Image text](https://github.com/rczh/kubernetes/blob/master/images-folder/dashboard_1.png)
+![Image text](./images-folder/dashboard_1.png)
 > 说明：因为跳过了登录页面，由于权限问题目前无法看到任何内容
 
 ### 7.4 授权Dashboard账户
@@ -407,7 +407,7 @@ subjects:
 clusterrolebinding.rbac.authorization.k8s.io/kubernetes-dashboard created
 ```
 现在跳过登录页面后已经可以正常访问dashboard页面了：
-![Image text](https://github.com/rczh/kubernetes/blob/master/images-folder/dashboard_2.png)
+![Image text](./images-folder/dashboard_2.png)
 
 ### 7.5 安装Heapster插件 
 为了能在Dashboard中查看节点状态，需要安装Dashboard Heapster插件
@@ -512,7 +512,7 @@ heapster-rbac.yaml  heapster.yaml
 clusterrolebinding.rbac.authorization.k8s.io/heapster created
 ```
 Heapster部署成功但是没有正常显示监控数据，查看Heapster pod日志，发现是由于缺少权限造成的。
-![Image text](https://github.com/rczh/kubernetes/blob/master/images-folder/heapster1.png)
+![Image text](./images-folder/heapster1.png)
 
 执行kubectl -n kube-system edit clusterrole system:heapster命令修改clusterrole，为Heapster增加权限：
 ```
@@ -526,7 +526,7 @@ Heapster部署成功但是没有正常显示监控数据，查看Heapster pod日
   - create
 ```
 Heapster监控启动成功：
-![Image text](https://github.com/rczh/kubernetes/blob/master/images-folder/heapster2.png)
+![Image text](./images-folder/heapster2.png)
 
 ## 8. 部署hello-node测试程序
 ### 8.1 创建server.js测试程序
@@ -602,7 +602,7 @@ deployment.apps/hello-node created
 service/hello-node-service created
 ```
 通过查看Dashboard发现，hello-node部署失败
-![Image text](https://github.com/rczh/kubernetes/blob/master/images-folder/hello-node1.png)
+![Image text](./images-folder/hello-node1.png)
 > 说明：由于hello-node:v1这个镜像在阿里云上是一个私有镜像，k8s没有权限拉取私有镜像，所以这里部署失败
 
 ### 8.4 创建secret，拉取私有镜像
@@ -655,7 +655,7 @@ service/hello-node-service unchanged
 ```
 ### 8.6 验证hello-node服务
 到这里hello-node服务已经部署成功，由于hello-node服务使用nodePort类型，查看service配置文件的nodePort端口(该端口是k8s自动分配，用于通过node节点访问服务)
-![Image text](https://github.com/rczh/kubernetes/blob/master/images-folder/hello-node2.png)
+![Image text](./images-folder/hello-node2.png)
 
 验证服务：
 ```
@@ -767,7 +767,7 @@ ingress.extensions/hello-node created
 ### 8.9 验证ingress访问结果
 通过Dashboard查看nginx-ingress服务的nodePort端口为30069
 
-![Image text](https://github.com/rczh/kubernetes/blob/master/images-folder/hello-node3.png)
+![Image text](./images-folder/hello-node3.png)
 
 验证ingress访问结果：
 ```
